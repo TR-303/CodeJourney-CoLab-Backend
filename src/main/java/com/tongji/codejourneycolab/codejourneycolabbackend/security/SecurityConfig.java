@@ -38,15 +38,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(CsrfConfigurer::disable)
-                .cors(cors -> {
-                    cors.configurationSource(request -> {
-                        var corsConfiguration = new CorsConfiguration();
-                        corsConfiguration.setAllowedOrigins(List.of("*"));
-                        corsConfiguration.setAllowedMethods(List.of("*"));
-                        corsConfiguration.setAllowedHeaders(List.of("*"));
-                        return corsConfiguration;
-                    });
-                })
+                .cors(cors ->
+                        cors.configurationSource(request -> {
+                            var corsConfiguration = new CorsConfiguration();
+                            corsConfiguration.setAllowedOrigins(List.of("*"));
+                            corsConfiguration.setAllowedMethods(List.of("*"));
+                            corsConfiguration.setAllowedHeaders(List.of("*"));
+                            return corsConfiguration;
+                        })
+                )
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(authorizedRoutes().toArray(new String[0])).authenticated()
                         .anyRequest().permitAll()

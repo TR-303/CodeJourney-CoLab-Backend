@@ -1,5 +1,6 @@
 package com.tongji.codejourneycolab.codejourneycolabbackend.security;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +40,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 var authentication = new UsernamePasswordAuthenticationToken(id, null, List.of());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 filterChain.doFilter(request, response);
-            } catch (Exception e) {
+            } catch (JwtException e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }
         }

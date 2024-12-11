@@ -1,6 +1,7 @@
 package com.tongji.codejourneycolab.codejourneycolabbackend.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +28,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public int tryGetIdFromToken(String token) throws Exception {
+    public int tryGetIdFromToken(String token) throws JwtException {
         var parser = Jwts.parser().verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes())).build();
         Claims claims = parser.parseSignedClaims(token).getPayload();
         return claims.get("id", Integer.class);
