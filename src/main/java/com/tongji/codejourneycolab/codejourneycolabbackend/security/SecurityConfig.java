@@ -24,6 +24,7 @@ public class SecurityConfig {
     @Autowired
     private UserMapper userMapper;
 
+    // 密码加密器
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -64,6 +65,7 @@ public class SecurityConfig {
         });
     }
 
+    // *在这里定义需要认证的路由，可以用ant风格的路径
     @Bean
     public List<String> authorizedRoutes() {
         return List.of("/helloauthorized");

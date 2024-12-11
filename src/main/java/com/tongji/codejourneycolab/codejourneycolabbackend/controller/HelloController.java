@@ -13,6 +13,8 @@ public class HelloController {
         return ResponseEntity.ok("da jia hao a ,wo shi codejourneycolab");
     }
     // ! 仅作测试！这个接口需要携带token才能访问，并且不需要传入id，id在token里面
+    // * 携带了token的请求会被JwtTokenFilter拦截，JwtTokenFilter会解析token并将id放入RequestAttribute
+    // * 通过@RequestAttribute注解获取id (也可以不获取忽略它)
     @GetMapping("/helloauthorized")
     public ResponseEntity<String> helloAuthorized(@RequestAttribute Integer id) {
         return ResponseEntity.ok("尊贵的用户 " + id + " 您好，欢迎来到codejourneycolab");
