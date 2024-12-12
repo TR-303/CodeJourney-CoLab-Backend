@@ -37,38 +37,24 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(CsrfConfigurer::disable)
-                .cors(cors ->
-                        cors.configurationSource(request -> {
-                            var corsConfiguration = new CorsConfiguration();
-                            corsConfiguration.setAllowedOrigins(List.of("*"));
-                            corsConfiguration.setAllowedMethods(List.of("*"));
-                            corsConfiguration.setAllowedHeaders(List.of("*"));
-                            return corsConfiguration;
-                        })
-                )
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(authorizedRoutes().toArray(new String[0])).authenticated()
-                        .anyRequest().permitAll()
-                )
-                .formLogin(FormLoginConfigurer::disable)
-                .httpBasic(HttpBasicConfigurer::disable)
-                .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-                .build();
+        return http.csrf(CsrfConfigurer::disable).cors(cors -> cors.configurationSource(request -> {
+            var corsConfiguration = new CorsConfiguration();
+            corsConfiguration.setAllowedOrigins(List.of("*"));
+            corsConfiguration.setAllowedMethods(List.of("*"));
+            corsConfiguration.setAllowedHeaders(List.of("*"));
+            return corsConfiguration;
+        })).authorizeHttpRequests(authorize -> authorize.requestMatchers(authorizedRoutes().toArray(new String[0])).authenticated().anyRequest().permitAll()).formLogin(FormLoginConfigurer::disable).httpBasic(HttpBasicConfigurer::disable).addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class).build();
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return (username -> {
-            return new CJUserDetails(userMapper.selectByUsername(username));
-        });
+        return username -> new CJUserDetails(userMapper.selectByUsername(username));
     }
 
     // *在这里定义需要认证的路由，可以用ant风格的路径
     @Bean
     public List<String> authorizedRoutes() {
-        return List.of("/helloauthorized");
+        return List.of("/helloauthorized", "/account/getinfo", "/account/editinfo");
     }
 
 }
