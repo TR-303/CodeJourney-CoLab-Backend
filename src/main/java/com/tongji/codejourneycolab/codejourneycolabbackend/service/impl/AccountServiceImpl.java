@@ -5,6 +5,7 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.entity.User;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.InvalidCredentialsException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.UsernameAlreadyExistsException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.mapper.UserMapper;
+import com.tongji.codejourneycolab.codejourneycolabbackend.security.InvalidTokenManager;
 import com.tongji.codejourneycolab.codejourneycolabbackend.security.JwtTokenProvider;
 import com.tongji.codejourneycolab.codejourneycolabbackend.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private InvalidTokenManager invalidTokenManager;
 
     @Override
     public String login(String username, String password) throws InvalidCredentialsException {
@@ -70,5 +74,10 @@ public class AccountServiceImpl implements AccountService {
         user.setUsername(userInfoDto.getUsername());
         user.setEmail(userInfoDto.getEmail());
         userMapper.updateById(user);
+    }
+
+    @Override
+    public void logout(String token) {
+        invalidTokenManager.addInvalidToken(token);
     }
 }

@@ -6,6 +6,7 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.dto.UserInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.InvalidCredentialsException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.UsernameAlreadyExistsException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.service.AccountService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,5 +53,16 @@ public class AccountController {
         } catch (InvalidCredentialsException e) {
             return ResponseEntity.status(401).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        if(token.startsWith("Bearer ")) {
+            token = token.substring(7);
+            accountService.logout(token);
+            return ResponseEntity.ok("Logout success");
+        }
+        return ResponseEntity.internalServerError().body("Unexpected internal server error");
     }
 }

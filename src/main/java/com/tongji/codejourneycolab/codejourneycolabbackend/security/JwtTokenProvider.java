@@ -34,4 +34,10 @@ public class JwtTokenProvider {
         return claims.get("id", Integer.class);
     }
 
+    public Date tryGetExpirationDateFromToken(String token) throws JwtException {
+        var parser = Jwts.parser().verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes())).build();
+        Claims claims = parser.parseSignedClaims(token).getPayload();
+        return claims.getExpiration();
+    }
+
 }

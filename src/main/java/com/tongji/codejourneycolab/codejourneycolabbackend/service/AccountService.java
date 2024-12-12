@@ -12,4 +12,7 @@ public interface AccountService {
     UserInfoDto getUserInfoById(Integer id) throws InvalidCredentialsException;
 
     void editUserInfoById(Integer id, UserInfoDto userInfoDto) throws InvalidCredentialsException;
+
+    void logout(String token);
+
 }

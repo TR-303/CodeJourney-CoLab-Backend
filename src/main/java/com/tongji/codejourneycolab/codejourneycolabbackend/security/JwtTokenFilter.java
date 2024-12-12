@@ -25,6 +25,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Qualifier("authorizedRoutes")
     private List<String> authorizedRoutes;
 
+    @Autowired
+    private InvalidTokenManager invalidTokenManager;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // if the request is not in the authorized routes, then let it pass
@@ -38,8 +41,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         // check token, set authentication, and put id into request attribute
         String token = request.getHeader("Authorization");
+
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
+
+            if(invalidTokenManager.isTokenInvalid(token)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+
             try {
                 Integer id = jwtTokenProvider.tryGetIdFromToken(token);
                 request.setAttribute("id", id);
