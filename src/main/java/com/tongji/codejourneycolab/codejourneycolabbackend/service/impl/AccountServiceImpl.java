@@ -38,7 +38,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void register(String username, String password) {
+    public void register(String username, String password, String email) {
         User user = userMapper.selectByUsername(username);
         if (user != null) {
             throw new UsernameAlreadyExistsException("Username already exists");
@@ -47,6 +47,8 @@ public class AccountServiceImpl implements AccountService {
         user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
+        user.setEmail(email);
+        user.setRole("ROLE_USER");
         userMapper.insert(user);
     }
 

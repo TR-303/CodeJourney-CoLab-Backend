@@ -29,7 +29,7 @@ public class AccountController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequestDto registerRequestDto) {
         try {
-            accountService.register(registerRequestDto.getUsername(), registerRequestDto.getPassword());
+            accountService.register(registerRequestDto.getUsername(), registerRequestDto.getPassword(), registerRequestDto.getEmail());
             return ResponseEntity.ok("Register success");
         } catch (UsernameAlreadyExistsException e) {
             return ResponseEntity.status(409).body(e.getMessage());

@@ -7,7 +7,7 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.exception.UsernameAlr
 public interface AccountService {
     String login(String username, String password) throws UsernameAlreadyExistsException;
 
-    void register(String username, String password);
+    void register(String username, String password, String email);
 
     UserInfoDto getUserInfoById(Integer id) throws InvalidCredentialsException;
 
