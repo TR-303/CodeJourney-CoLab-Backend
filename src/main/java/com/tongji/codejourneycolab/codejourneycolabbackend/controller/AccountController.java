@@ -4,7 +4,7 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.dto.LoginRequestDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.RegisterRequestDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.UserInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.InvalidCredentialsException;
-import com.tongji.codejourneycolab.codejourneycolabbackend.exception.InvalidRegisterException;
+import com.tongji.codejourneycolab.codejourneycolabbackend.exception.InvalidInformationException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.IdentityAlreadyExistsException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.service.AccountService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +32,7 @@ public class AccountController {
         try {
             accountService.register(registerRequestDto.getUsername(), registerRequestDto.getPassword(), registerRequestDto.getEmail());
             return ResponseEntity.ok("Register success");
-        } catch (IdentityAlreadyExistsException | InvalidRegisterException e) {
+        } catch (IdentityAlreadyExistsException | InvalidInformationException e) {
             return ResponseEntity.status(409).body(e.getMessage());
         }
     }
@@ -53,6 +53,8 @@ public class AccountController {
             return ResponseEntity.ok("Edit success");
         } catch (InvalidCredentialsException e) {
             return ResponseEntity.status(401).body(e.getMessage());
+        } catch (InvalidInformationException e) {
+            return ResponseEntity.status(409).body(e.getMessage());
         }
     }
 
