@@ -6,8 +6,8 @@ import java.util.List;
 
 @Data
 public class Question {
-    private int id;
-    private String title;
-    private int difficulty;
+    protected int id;
+    protected String title;
+    protected int difficulty;
 }
 
