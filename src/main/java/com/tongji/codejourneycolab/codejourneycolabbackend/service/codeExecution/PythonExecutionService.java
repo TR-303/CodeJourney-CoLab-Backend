@@ -9,8 +9,8 @@ import org.python.core.PyString;
 import org.python.util.PythonInterpreter;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,6 +18,7 @@ import java.util.List;
 public class PythonExecutionService {
 
     public SubmissionDetail executePythonCode(String code, List<TestCase> testCases) {
+        System.out.println("code:" + code);
         int attemptNum = 1;  // 任意整数
         LocalDateTime submitTime = LocalDateTime.now();
         String language = "Python";
@@ -26,62 +27,78 @@ public class PythonExecutionService {
         double maxTime = 0; // 记录最大执行时间
         String firstFailureOutput = null;
 
-        try (PythonInterpreter interpreter = new PythonInterpreter()) {
-            // 打印传入的代码
-            System.out.println("Code: " + code);
+        // python程序的绝对路径，在windows中用"\\"分隔，在Linux中用"/"分隔
+        String pyPath = "E:\\python39\\python.exe";  // Python解释器路径
 
-            // 执行代码，支持Python 2.x 语法
-            interpreter.exec(code);  // 直接执行传入的代码
+        // 临时文件路径，用来存储代码
+        String codeFilePath = "E:\\temp_code.py";
 
-            // 遍历所有测试用例并执行
-            for (TestCase testCase : testCases) {
-                System.out.println("testCase:" + testCase);
-                String input = testCase.getInput();
-                String expectedOutput = testCase.getOutput();
+        // 将代码写入到一个临时Python文件
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(codeFilePath))) {
+            writer.write(code);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            state = 2;  // 编译错误
+        }
+
+        // 遍历所有测试用例并执行
+        for (TestCase testCase : testCases) {
+            String input = testCase.getInput();
+            String expectedOutput = testCase.getOutput();
+
+            try {
+                // 设置运行Python程序的命令，传入Python程序路径和代码文件路径
+                String[] args = new String[]{pyPath, codeFilePath, input};  // 将输入参数作为命令行参数传递
 
                 // 记录执行开始时间
                 long startTime = System.nanoTime();
 
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                PrintStream ps = new PrintStream(baos);
-                interpreter.setOut(ps);
+                // 执行Python程序
+                ProcessBuilder processBuilder = new ProcessBuilder(args);
+                processBuilder.redirectErrorStream(true); // 合并标准输出和错误输出
+                Process process = processBuilder.start();
 
-                interpreter.exec(code);
+                // 获取Python输出字符串
+                BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+                StringBuilder outputBuilder = new StringBuilder();
+                String line;
+                while ((line = in.readLine()) != null) {
+                    outputBuilder.append(line).append("\n");
+                }
+                in.close();
 
-                String actualOutput = baos.toString().trim();  // 获取输出内容
-                System.out.println("actualOutput:" + actualOutput);
+                // 等待进程结束
+                process.waitFor();
+
+                // 获取程序输出
+                String actualOutput = outputBuilder.toString().trim();
+                System.out.println("Captured output: " + actualOutput);
+
+
+                // 比较输出是否正确
+                if (!actualOutput.equals(expectedOutput)) {
+                    state = 3;  // 结果错误
+                    if (firstFailureOutput == null) {
+                        firstFailureOutput = actualOutput;  // 记录第一个失败的输出
+                    }
+                } else {
+                    passCount++;
+                }
 
                 // 记录执行结束时间并计算运行时间
                 long endTime = System.nanoTime();
                 double elapsedTime = (endTime - startTime) / 1000000.0; // 转换为毫秒
 
-                if (!actualOutput.equals(expectedOutput)) {
-                    state = 3;  // 结果错误
-                    firstFailureOutput = actualOutput;  // 记录第一个失败的输出
-                    break;
-                } else {
-                    passCount++;
-                }
+                maxTime = Math.max(maxTime, elapsedTime);  // 更新最大执行时间
 
-                maxTime = Math.max(maxTime, elapsedTime);  // 保留最大执行时间
+            } catch (IOException | InterruptedException e) {
+                System.out.println(e.getMessage());
+                state = 2;  // 编译错误
             }
-        } catch (Exception e) {
-            state = 2;  // 编译错误
-            System.out.println("Compilation Error: " + e.getMessage());
         }
 
-        // 构造并返回SubmissionDetail对象
-        SubmissionDetail submissionDetail = new SubmissionDetail();
-        submissionDetail.setAttemptNum(attemptNum);
-        submissionDetail.setSubmitTime(submitTime);
-        submissionDetail.setLanguage(language);
-        submissionDetail.setState(state);
-        submissionDetail.setPassCount(passCount);
-        submissionDetail.setTotalTime(maxTime);
-        submissionDetail.setCode(code);
-        submissionDetail.setFirstFailureOutput(firstFailureOutput);
-
-        return submissionDetail;
+        return new SubmissionDetail(
+                attemptNum, submitTime, language, state, passCount, maxTime, code, firstFailureOutput);
     }
 }
 
