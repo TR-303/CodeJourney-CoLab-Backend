@@ -59,5 +59,15 @@
         from submission
         where user_id = #{userId} and question_id = #{questionId} and attempt_num = #{attemptNum};
     </select>
+    <select id="getSubmissionCount">
+        select count(attempt_num)
+        from submission
+        where question_id = #{questionId} and user_id = #{userId};
+    </select>
+    <insert id="addSubmission">
+        insert into submission
+        (question_id, user_id, attempt_num, submit_time, code, language, state, pass_count, total_time, first_failure_output)
+        values (#{questionId}, #{userId}, #{attemptNum}, #{submitTime}, #{code}, #{language}, #{state}, #{passCount}, #{totalTime}, #{firstFailureOutput})
+    </insert>
 </mapper>
 
