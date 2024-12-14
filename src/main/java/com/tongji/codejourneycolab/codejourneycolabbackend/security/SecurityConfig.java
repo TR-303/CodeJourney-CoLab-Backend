@@ -54,7 +54,7 @@ public class SecurityConfig {
     // *在这里定义需要认证的路由，可以用ant风格的路径
     @Bean
     public List<String> authorizedRoutes() {
-        return List.of("/helloauthorized", "/account/getinfo", "/account/editinfo","/account/logout");
+        return List.of("/helloauthorized","/hellowithparam", "/account/getinfo", "/account/editinfo","/account/logout");
     }
 
     // 使用in memory实现的token失效管理器

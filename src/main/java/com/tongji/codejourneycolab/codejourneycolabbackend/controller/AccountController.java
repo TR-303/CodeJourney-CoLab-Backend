@@ -4,7 +4,8 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.dto.LoginRequestDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.RegisterRequestDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.UserInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.InvalidCredentialsException;
-import com.tongji.codejourneycolab.codejourneycolabbackend.exception.UsernameAlreadyExistsException;
+import com.tongji.codejourneycolab.codejourneycolabbackend.exception.InvalidRegisterException;
+import com.tongji.codejourneycolab.codejourneycolabbackend.exception.IdentityAlreadyExistsException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.service.AccountService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class AccountController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequestDto loginRequestDto) {
         try {
-            return ResponseEntity.ok(accountService.login(loginRequestDto.getUsername(), loginRequestDto.getPassword()));
+            return ResponseEntity.ok(accountService.login(loginRequestDto.getIdentity(), loginRequestDto.getPassword()));
         } catch (InvalidCredentialsException e) {
             return ResponseEntity.status(401).body(e.getMessage());
         }
@@ -29,9 +30,9 @@ public class AccountController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequestDto registerRequestDto) {
         try {
-            accountService.register(registerRequestDto.getUsername(), registerRequestDto.getPassword());
+            accountService.register(registerRequestDto.getUsername(), registerRequestDto.getPassword(), registerRequestDto.getEmail());
             return ResponseEntity.ok("Register success");
-        } catch (UsernameAlreadyExistsException e) {
+        } catch (IdentityAlreadyExistsException | InvalidRegisterException e) {
             return ResponseEntity.status(409).body(e.getMessage());
         }
     }
@@ -58,7 +59,7 @@ public class AccountController {
     @GetMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
-        if(token.startsWith("Bearer ")) {
+        if (token.startsWith("Bearer ")) {
             token = token.substring(7);
             accountService.logout(token);
             return ResponseEntity.ok("Logout success");
