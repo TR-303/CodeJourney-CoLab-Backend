@@ -39,12 +39,19 @@
     <!--获取题目状态（AC,WA,RE...）-->
     <select id="getQuestionState">
         select
-            case when exists (
-                select 1
-                from submission s
-                where s.user_id = #{userId} and s.question_id = #{questionId} and s.state = 1
-            ) then 1
-            else 2 end as state;
+            case
+                when not exists (
+                    select 1
+                    from submission s
+                    where s.user_id = #{userId} and s.question_id = #{questionId}
+                ) then 3
+                when exists (
+                    select 1
+                    from submission s
+                    where s.user_id = #{userId} and s.question_id = #{questionId} and s.state = 1
+                ) then 1
+                else 2
+                end as state;
     </select>
     <!--获取单个题目的提交记录-->
     <select id="getSubmissionList" resultType="com.tongji.codejourneycolab.codejourneycolabbackend.entity.Submission">

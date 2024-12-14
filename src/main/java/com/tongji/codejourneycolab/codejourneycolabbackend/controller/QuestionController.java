@@ -35,7 +35,7 @@ public class QuestionController {
                 case 1:
                     questionByUser.fill(question,"passed");
                     break;
-                case 2, 3:
+                case 2:
                     questionByUser.fill(question,"failed");
                     break;
                 default:
