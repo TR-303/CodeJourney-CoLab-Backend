@@ -6,6 +6,7 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.service.codeExecution
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -22,6 +23,29 @@ public class QuestionController {
         return questionList;
     }
 
+    @GetMapping("/getListByUser")
+    public List<QuestionByUser> getQuestionListByUser(@RequestAttribute Integer id) {
+        List<Question> questionList = questionMapper.getQuestionList();
+        List<QuestionByUser> questionByUserList = new ArrayList<>();
+
+        for (Question question : questionList) {
+            int status = questionMapper.getQuestionState(id, question.getId());
+            QuestionByUser questionByUser = new QuestionByUser();
+            switch (status) {
+                case 1:
+                    questionByUser.fill(question,"passed");
+                    break;
+                case 2, 3:
+                    questionByUser.fill(question,"failed");
+                    break;
+                default:
+                    questionByUser.fill(question,"no attempt");
+            }
+            questionByUserList.add(questionByUser);
+        }
+        return questionByUserList;
+    }
+
     //获取题目详情
     @GetMapping("/get")
     public Question getQuestion(@RequestParam int questionId) {
@@ -34,9 +58,9 @@ public class QuestionController {
     //获取提交过的题目
     @GetMapping("/getAttemptedQuestionList")
     public List<QuestionSubmitted> getAttemptedQuestionList(@RequestAttribute Integer id) {
-        List<QuestionSubmitted> attemptedList = questionMapper.getAttemptedQuestionList(1);
+        List<QuestionSubmitted> attemptedList = questionMapper.getAttemptedQuestionList(id);
         for (QuestionSubmitted attemptedQuestion : attemptedList) {
-            attemptedQuestion.setState(questionMapper.getQuestionState(1, attemptedQuestion.getId()));
+            attemptedQuestion.setState(questionMapper.getQuestionState(id, attemptedQuestion.getId()));
         }
 //        System.out.print("attemptedList:" + attemptedList);
         return attemptedList;

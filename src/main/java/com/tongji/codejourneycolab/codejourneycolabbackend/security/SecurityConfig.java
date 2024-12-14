@@ -54,8 +54,13 @@ public class SecurityConfig {
     // *在这里定义需要认证的路由，可以用ant风格的路径
     @Bean
     public List<String> authorizedRoutes() {
+<<<<<<< Updated upstream
         return List.of("/helloauthorized","/hellowithparam", "/account/getinfo", "/account/editinfo","/account/logout",
                 "/question/getAttemptedQuestionList","/question/getSubmissionList","/question/getSubmission","/question/run");
+=======
+        return List.of("/helloauthorized", "/account/getinfo", "/account/editinfo","/account/logout",
+                "/question/getListByUser","/question/getAttemptedQuestionList","/question/getSubmissionList","/question/getSubmission","/question/run");
+>>>>>>> Stashed changes
     }
 
     // 使用in memory实现的token失效管理器
