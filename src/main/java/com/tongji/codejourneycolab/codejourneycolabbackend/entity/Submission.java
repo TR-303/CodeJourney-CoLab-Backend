@@ -1,15 +1,16 @@
 package com.tongji.codejourneycolab.codejourneycolabbackend.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
 public class Submission {
-    private int attemptNum;
-    private LocalDateTime submitTime;
-    private String language;
-    private int state;
-    private int passCount;
-    private double totalTime;
+    protected int attemptNum;
+    protected LocalDateTime submitTime;
+    protected String language;
+    protected int state;
+    protected int passCount;
+    protected double totalTime;
 }

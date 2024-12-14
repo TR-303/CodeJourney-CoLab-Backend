@@ -17,7 +17,7 @@ public interface QuestionMapper {
     //@Select("select * from question where id = #{questionId}")
     QuestionDetail getQuestionById(@Param("questionId") int questionId);
 
-
+    //获取单一题目的用例
     //@Select("select id, input, output from test_case where question_id=#{questionId} and id<=3 order by id")
     List<TestCase> getTestCaseListByQuestionId(@Param("questionId") int questionId);
 
@@ -34,4 +34,10 @@ public interface QuestionMapper {
 
     //获取提交记录详细信息
     SubmissionDetail getSubmission(@Param("userId") int userId, @Param("questionId") int questionId, @Param("attemptNum") int attemptNum);
+
+    //获取用户该题已提交次数
+    int getSubmissionCount(@Param("userId") int userId, @Param("questionId") int questionId);
+
+    //添加提交记录
+    void addSubmission(SubmissionDetail detail);
 }
