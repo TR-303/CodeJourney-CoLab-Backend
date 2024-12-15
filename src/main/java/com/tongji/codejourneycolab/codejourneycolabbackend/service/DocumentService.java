@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface DocumentService {
 
+    /// TODO: remove some of them, and make private
+
     Boolean isOwner(Integer userId, Integer documentId);
 
     Boolean hasAccess(Integer userId, Integer documentId);
@@ -30,4 +32,6 @@ public interface DocumentService {
     Integer getDocumentIdBySharingCode(String invitationCode);
 
     List<DocumentInfoDto> getDocumentInfoList(Integer userId);
+
+    void openShareDBService(String code);
 }

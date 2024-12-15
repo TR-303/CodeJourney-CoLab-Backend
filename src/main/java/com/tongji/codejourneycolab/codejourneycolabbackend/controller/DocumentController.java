@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/file")
+@RequestMapping("/document")
 public class DocumentController {
     @Autowired
     private DocumentService documentService;
@@ -116,17 +116,28 @@ public class DocumentController {
 
 
 
-    /// INFO:  Only For Debug Use, Remove In future
-    @GetMapping("/revertcoding")
-    public ResponseEntity<Map<String, String>> connectService( @RequestParam String invitationCode) {
-        Map<String, String> response = new HashMap<>();
-        try {
-            Integer documentId = documentService.getDocumentIdBySharingCode(invitationCode);
-            response.put("sharedURL", documentId.toString());
-        } catch (Exception e) {
-            response.put("status", "fail");
-        }
+//    /// INFO:  Only For Debug Use, Remove In future
+//    @GetMapping("/revertcoding")
+//    public ResponseEntity<Map<String, String>> connectService( @RequestParam String invitationCode) {
+//        Map<String, String> response = new HashMap<>();
+//        try {
+//            Integer documentId = documentService.getDocumentIdBySharingCode(invitationCode);
+//            response.put("sharedURL", documentId.toString());
+//        } catch (Exception e) {
+//            response.put("status", "fail");
+//        }
+//
+//        return ResponseEntity.ok(response);
+//    }
 
-        return ResponseEntity.ok(response);
+    /// TODO: insert into relation table
+    @PostMapping("/createSharedbService")
+    public ResponseEntity<String> connectService(@RequestAttribute Integer id, @RequestParam String invitationCode) {
+        try {
+            documentService.openShareDBService(invitationCode);
+            return ResponseEntity.ok("success");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

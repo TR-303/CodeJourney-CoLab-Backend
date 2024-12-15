@@ -7,8 +7,12 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.service.DocumentServi
 import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -18,6 +22,12 @@ import java.util.List;
 public class DocumentServiceImpl implements DocumentService {
     @Autowired
     private DocumentMapper documentMapper;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Value("${sharedb.url}")
+    private String sharedbUrl;
 
     @Override
     public Boolean isOwner(Integer userId, Integer documentId) {
@@ -181,8 +191,36 @@ public class DocumentServiceImpl implements DocumentService {
         return documentList;
     }
 
+    @Override
+    public void openShareDBService(String code) {
+        LinkedMultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
+        Integer id;
+        try {
+            id = getSharedId(code);
+        } catch (Exception e) {
+            throw new RuntimeException("获取文档ID失败");
+        }
 
-    private static Integer getSharedId(String sharingCode) throws Exception {
+        String content = documentMapper.selectById(id).getCode();
+
+        // 请求体内容（JSON数据）
+        String jsonPayload = "{\"docCode\": \"" + code + "\", \"content\": \"" + content + "\"}";
+
+
+        // 设置请求头
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // 创建 HttpEntity，包含请求体和头部
+        HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
+
+        // 发送 POST 请求
+        ResponseEntity<String> result = restTemplate.exchange(sharedbUrl, HttpMethod.POST, entity, String.class);System.out.println(result.getBody());
+        /// TODO: dyx might return false, add try catch here
+    }
+
+
+    private Integer getSharedId(String sharingCode) throws Exception {
         String key = "d0_n0t_PUbL1SH_TH1S_K3Y";
 // 补全密钥长度
         key = padKeyToValidLength(key);
@@ -206,7 +244,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
 
-    private static String createSharingCode(Integer documentId) throws Exception {
+    private String createSharingCode(Integer documentId) throws Exception {
         String data = documentId.toString();
         String key = "d0_n0t_PUbL1SH_TH1S_K3Y";       //key AES-16/24/32byte DES-8byte 3DES-8/16/24byte // DO NOT PUBLISH
         key = padKeyToValidLength(key);
