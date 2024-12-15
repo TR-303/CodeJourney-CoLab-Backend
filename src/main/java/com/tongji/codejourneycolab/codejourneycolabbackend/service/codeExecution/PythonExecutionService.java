@@ -94,7 +94,7 @@ public class PythonExecutionService {
 
                 // 记录执行结束时间并计算运行时间
                 long endTime = System.nanoTime();
-                double elapsedTime = (endTime - startTime) / 1000000.0; // 转换为毫秒
+                double elapsedTime = (endTime - startTime) / 1000000000.0; // 转换为秒
 
                 maxTime = Math.max(maxTime, elapsedTime);  // 更新最大执行时间
 
