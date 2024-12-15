@@ -23,7 +23,7 @@ public interface DocumentService {
 
     void deleteDocument(Integer ownerId, Integer documentId);
 
-    DocumentInfoDto createDocument(Integer ownerId);
+    DocumentInfoDto createDocument(Integer ownerId,String title);
 
     String getDocumentShareCode(Integer ownerId, Integer documentId);
 

@@ -115,11 +115,11 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public DocumentInfoDto createDocument(Integer ownerId) {
+    public DocumentInfoDto createDocument(Integer ownerId, String title) {
         // 创建默认文档对象
         Document newDocument = new Document();
         newDocument.setOwnerId(ownerId);
-        newDocument.setTitle("Untitled"); // 默认标题
+        newDocument.setTitle(title);
 
         // 插入新文档记录并获取生成的文档 ID
         documentMapper.createDocument(newDocument);

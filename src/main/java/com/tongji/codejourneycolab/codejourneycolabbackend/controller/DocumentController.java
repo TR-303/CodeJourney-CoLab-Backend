@@ -69,7 +69,7 @@ public class DocumentController {
             if (title.isEmpty() || title.length() > 50) {
                 response.put("status", "invalid title length");
             } else {
-                DocumentInfoDto newDocument = documentService.createDocument(id);
+                DocumentInfoDto newDocument = documentService.createDocument(id, title);
                 response.put("status", "success");
                 response.put("documentID", newDocument.getId());
             }
