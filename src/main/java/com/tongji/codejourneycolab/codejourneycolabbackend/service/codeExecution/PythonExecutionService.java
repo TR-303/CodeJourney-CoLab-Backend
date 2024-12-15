@@ -44,11 +44,19 @@ public class PythonExecutionService {
         // 遍历所有测试用例并执行
         for (TestCase testCase : testCases) {
             String input = testCase.getInput();
+            System.out.println("input:" + input);
             String expectedOutput = testCase.getOutput();
 
             try {
                 // 设置运行Python程序的命令，传入Python程序路径和代码文件路径
-                String[] args = new String[]{pyPath, codeFilePath, input};  // 将输入参数作为命令行参数传递
+                String[] args;
+                if(input != null){
+                    // input 不为空时，将输入参数作为命令行参数传递
+                    args = new String[]{pyPath, codeFilePath, input};
+                } else {
+                    // 如果 input 为空，传递默认值或采取其他逻辑
+                    args = new String[]{pyPath, codeFilePath};  // 不传入 input 参数，或者传递其他默认值
+                }
 
                 // 记录执行开始时间
                 long startTime = System.nanoTime();
@@ -78,9 +86,8 @@ public class PythonExecutionService {
                 // 比较输出是否正确
                 if (!actualOutput.equals(expectedOutput)) {
                     state = 3;  // 结果错误
-                    if (firstFailureOutput == null) {
-                        firstFailureOutput = actualOutput;  // 记录第一个失败的输出
-                    }
+                    firstFailureOutput = actualOutput;  // 记录第一个失败的输出
+                    break;
                 } else {
                     passCount++;
                 }
