@@ -43,19 +43,24 @@ public class PythonExecutionService {
 
         // 遍历所有测试用例并执行
         for (TestCase testCase : testCases) {
-            String input = testCase.getInput();
-            System.out.println("input:" + input);
-            String expectedOutput = testCase.getOutput();
+            String input = testCase.getInput();    // 获取空格分隔的输入字符串
+            String expectedOutput = testCase.getOutput();  // 获取期望的输出
 
             try {
-                // 设置运行Python程序的命令，传入Python程序路径和代码文件路径
+                // 将输入拆分为多个部分（通过空格分隔）
+                String[] inputArgs = input.split("\\s+");
+
+                // 构建传递给 Python 程序的参数
                 String[] args;
-                if(input != null){
-                    // input 不为空时，将输入参数作为命令行参数传递
-                    args = new String[]{pyPath, codeFilePath, input};
+                if (inputArgs.length > 0) {
+                    // 将输入拆分后的每个部分作为命令行参数传递给 Python 程序
+                    args = new String[inputArgs.length + 2]; // +2: 一个是 Python 解释器路径，另一个是代码文件路径
+                    args[0] = pyPath;
+                    args[1] = codeFilePath;
+                    System.arraycopy(inputArgs, 0, args, 2, inputArgs.length); // 将所有输入参数复制到 args 中
                 } else {
-                    // 如果 input 为空，传递默认值或采取其他逻辑
-                    args = new String[]{pyPath, codeFilePath};  // 不传入 input 参数，或者传递其他默认值
+                    // 如果没有输入，则只传递 Python 解释器和代码文件路径
+                    args = new String[]{pyPath, codeFilePath};
                 }
 
                 // 记录执行开始时间
@@ -78,15 +83,31 @@ public class PythonExecutionService {
                 // 等待进程结束
                 process.waitFor();
 
-                // 获取程序输出
+                // 获取程序输出并拆分
                 String actualOutput = outputBuilder.toString().trim();
                 System.out.println("Captured output: " + actualOutput);
 
+                // 将实际输出按空格拆分为单个部分，进行比较
+                String[] actualOutputParts = actualOutput.split("\\s+");
+                String[] expectedOutputParts = expectedOutput.split("\\s+");
 
                 // 比较输出是否正确
-                if (!actualOutput.equals(expectedOutput)) {
-                    state = 3;  // 结果错误
+                if (actualOutputParts.length != expectedOutputParts.length) {
+                    state = 3;  // 结果错误（输出长度不一致）
                     firstFailureOutput = actualOutput;  // 记录第一个失败的输出
+                    break;
+                }
+
+                // 比较每一部分
+                for (int i = 0; i < actualOutputParts.length; i++) {
+                    if (!actualOutputParts[i].equals(expectedOutputParts[i])) {
+                        state = 3;  // 结果错误
+                        firstFailureOutput = actualOutput;  // 记录第一个失败的输出
+                        break;
+                    }
+                }
+
+                if (state == 3) {
                     break;
                 } else {
                     passCount++;
@@ -107,6 +128,8 @@ public class PythonExecutionService {
         return new SubmissionDetail(
                 attemptNum, submitTime, language, state, passCount, maxTime, code, firstFailureOutput);
     }
+
+
 }
 
 
