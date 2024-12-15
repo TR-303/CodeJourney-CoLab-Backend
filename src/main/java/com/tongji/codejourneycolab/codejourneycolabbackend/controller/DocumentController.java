@@ -63,7 +63,6 @@ public class DocumentController {
      */
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> createDocument(@RequestAttribute Integer id,
-                                                              @RequestParam String language,
                                                               @RequestParam String title) {
         Map<String, Object> response = new HashMap<>();
         try {
