@@ -55,7 +55,9 @@ public class SecurityConfig {
     @Bean
     public List<String> authorizedRoutes() {
         return List.of("/helloauthorized","/hellowithparam", "/account/getinfo", "/account/editinfo","/account/logout",
-                "/question/getListByUser","/question/getAttemptedQuestionList","/question/getSubmissionList","/question/getSubmission","/question/run");
+                "/question/getListByUser","/question/getAttemptedQuestionList","/question/getSubmissionList","/question/getSubmission","/question/run",
+                "/file/**"
+        );
     }
 
     // 使用in memory实现的token失效管理器
