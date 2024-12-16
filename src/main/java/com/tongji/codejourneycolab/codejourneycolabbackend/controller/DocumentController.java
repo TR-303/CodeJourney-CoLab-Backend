@@ -76,7 +76,7 @@ public class DocumentController {
     public ResponseEntity<String> connectService(@RequestAttribute Integer id, @RequestBody String invitationCode) {
         try {
             Integer documentId =  documentService.joinCollaboration(id, invitationCode);
-            return ResponseEntity.ok("success, documentId: " + documentId.toString());
+            return ResponseEntity.ok(documentId.toString());
         } catch (DocInvitationCodeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }catch (DocPermissionException e) {
