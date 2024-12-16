@@ -73,7 +73,7 @@ public class DocumentController {
     }
 
     /// TODO: insert into relation table
-    @PostMapping("/createSharedbService")
+    @PostMapping("/connectService")
     public ResponseEntity<String> connectService(@RequestAttribute Integer id, @RequestParam String invitationCode) {
         try {
             Integer documentId =  documentService.joinCollaboration(id, invitationCode);
