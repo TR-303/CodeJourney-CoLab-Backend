@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class DocumentInfoDto {
     private Integer id;
     private Integer ownerId;
+    private String ownerName;
     private LocalDateTime createTime;
     private LocalDateTime lastModifiedTime;
     private String title;

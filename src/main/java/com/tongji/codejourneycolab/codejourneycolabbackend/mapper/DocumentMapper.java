@@ -35,11 +35,11 @@ public interface DocumentMapper extends BaseMapper<Document> {
     @Update("UPDATE document SET code = #{content}, last_modified_time = NOW() WHERE id = #{documentId}")
     void updateContent(@Param("documentId") Integer documentId, @Param("content") String content);
 
-    @Select("SELECT d.id, d.owner_id, d.create_time, d.last_modified_time, d.title " +
+    @Select("SELECT d.id, d.owner_id, u.username AS owner_name, d.create_time, d.last_modified_time, d.title " +
             "FROM document d " +
-            "JOIN user_document ud ON d.id = ud.document_id " +
-            "WHERE ud.user_id = #{userId} " +
-            "ORDER BY d.last_modified_time DESC")
+            "LEFT JOIN user u ON d.owner_id = u.id " +
+            "LEFT JOIN user_document ud ON d.id = ud.document_id AND ud.user_id = #{userId} " +
+            "WHERE d.owner_id = #{userId} OR ud.user_id = #{userId}")
     List<DocumentInfoDto> getDocumentInfoListByUserId(@Param("userId") Integer userId);
 
 }
