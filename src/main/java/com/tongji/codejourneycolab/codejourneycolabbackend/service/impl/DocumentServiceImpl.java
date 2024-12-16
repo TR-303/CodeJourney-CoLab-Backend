@@ -4,6 +4,7 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Document;
 import com.tongji.codejourneycolab.codejourneycolabbackend.mapper.DocumentMapper;
 import com.tongji.codejourneycolab.codejourneycolabbackend.service.DocumentService;
+
 import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Cipher;
@@ -32,12 +32,15 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     public Boolean isOwner(Integer userId, Integer documentId) {
         Integer ownerId = documentMapper.getDocumentOwner(documentId);
+
         return ownerId != null && ownerId.equals(userId);
     }
 
 
     @Override
     public Boolean hasAccess(Integer userId, Integer documentId) {
+        // * -4242 用于标识sharedb服务器
+        if (userId == -4242) return true;
         // 检查用户是否有访问权限
         return documentMapper.checkAccess(userId, documentId);
     }
@@ -138,11 +141,13 @@ public class DocumentServiceImpl implements DocumentService {
         return documentMapper.getDocumentInfo(newDocument.getId());
     }
 
-    public void updateContent(Integer userId, Integer documentId, String newContent) {
+    @Override
+    public void updateContent(Integer userId, String documentCode, String newContent) {
 //        // 检查文档是否存在
 //        if (!documentMapper.exists(documentId)) {
 //            throw new RuntimeException("文档不存在，文档 ID：" + documentId);
 //        }
+        Integer documentId = getDocumentIdBySharingCode(documentCode);
 
         // 检查用户是否有权限更新文档
         if (!isOwner(userId, documentId) && !hasAccess(userId, documentId)) {
@@ -193,7 +198,6 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public void openShareDBService(String code) {
-        LinkedMultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
         Integer id;
         try {
             id = getSharedId(code);
@@ -215,7 +219,8 @@ public class DocumentServiceImpl implements DocumentService {
         HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
 
         // 发送 POST 请求
-        ResponseEntity<String> result = restTemplate.exchange(sharedbUrl, HttpMethod.POST, entity, String.class);System.out.println(result.getBody());
+        ResponseEntity<String> result = restTemplate.exchange(sharedbUrl, HttpMethod.POST, entity, String.class);
+        System.out.println(result.getBody());
         /// TODO: dyx might return false, add try catch here
     }
 

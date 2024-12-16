@@ -21,7 +21,7 @@ public interface DocumentService {
 
     DocumentInfoDto getDocumentInfo(Integer userId , Integer documentId);
 
-    void updateContent(Integer userId ,Integer documentId, String new_content);
+    void updateContent(Integer userId ,String documentCode, String new_content);
 
     void deleteDocument(Integer ownerId, Integer documentId);
 

@@ -1,5 +1,6 @@
 package com.tongji.codejourneycolab.codejourneycolabbackend.controller;
 
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentContentDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Document;
 import com.tongji.codejourneycolab.codejourneycolabbackend.service.DocumentService;
@@ -39,16 +40,17 @@ public class DocumentController {
      * 保存文件内容
      */
     @PostMapping("/savecontent")
-    public ResponseEntity<Map<String, String>> saveContent(@RequestAttribute Integer id,
-                                                           @RequestParam Integer documentId,
-                                                           @RequestParam String code) {
+    public ResponseEntity<Map<String, String>> saveContent(@RequestAttribute Integer id, @RequestBody DocumentContentDto documentContentDto) {
         Map<String, String> response = new HashMap<>();
+
+        String documentCode = documentContentDto.getDocumentCode();
+        String code = documentContentDto.getCode();
 
         try {
             if (code.length() > 50000) { // 假设最大长度限制
                 response.put("status", "invalid length");
             } else {
-                documentService.updateContent(id, documentId, code);
+                documentService.updateContent(id, documentCode, code);
                 response.put("status", "success");
             }
         } catch (Exception e) {

@@ -40,4 +40,11 @@ public class JwtTokenProvider {
         return claims.getExpiration();
     }
 
+    private String generatePermanentToken(int id) {
+        return Jwts.builder()
+                .claim("id", id)
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                .compact();
+    }
+
 }
