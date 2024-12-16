@@ -2,6 +2,7 @@ package com.tongji.codejourneycolab.codejourneycolabbackend.controller;
 
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentContentDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.InvitationCodeDTO;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocInvitationCodeException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocPermissionException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.service.DocumentService;
@@ -73,9 +74,9 @@ public class DocumentController {
     }
 
     @PostMapping("/connectService")
-    public ResponseEntity<String> connectService(@RequestAttribute Integer id, @RequestBody String invitationCode) {
+    public ResponseEntity<String> connectService(@RequestAttribute Integer id, @RequestBody InvitationCodeDTO invitation) {
         try {
-            Integer documentId =  documentService.joinCollaboration(id, invitationCode);
+            Integer documentId =  documentService.joinCollaboration(id, invitation.getInvitationCode());
             return ResponseEntity.ok(documentId.toString());
         } catch (DocInvitationCodeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
