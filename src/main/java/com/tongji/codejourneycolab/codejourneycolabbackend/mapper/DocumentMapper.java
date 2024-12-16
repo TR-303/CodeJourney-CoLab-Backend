@@ -27,8 +27,8 @@ public interface DocumentMapper extends BaseMapper<Document> {
     @Delete("DELETE FROM document WHERE id = #{documentId}")
     void deleteDocument(@Param("documentId") Integer documentId);
 
-    @Insert("INSERT INTO document (owner_id, title, create_time, last_modified_time) " +
-            "VALUES (#{ownerId}, #{title}, NOW(), NOW())")
+    @Insert("INSERT INTO document (owner_id, title, code, create_time, last_modified_time) " +
+            "VALUES (#{ownerId}, #{title}, #{code}, NOW(), NOW())")
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     void createDocument(Document document);
 
