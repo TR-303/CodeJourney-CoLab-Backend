@@ -79,6 +79,8 @@ public class DocumentController {
             return ResponseEntity.ok("success, documentId: " + documentId.toString());
         } catch (DocInvitationCodeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }catch (DocPermissionException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
 }

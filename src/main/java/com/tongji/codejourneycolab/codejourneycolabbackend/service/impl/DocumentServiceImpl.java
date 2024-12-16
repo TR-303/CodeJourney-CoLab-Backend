@@ -51,6 +51,10 @@ public class DocumentServiceImpl implements DocumentService {
         ///  为文档添加协作者
         Integer documentId = getSharedId(colabCode);
 
+        if(!documentMapper.existsDocument(documentId)) {
+            throw new DocPermissionException("No permission to this invitation code");
+        }
+
         if (!isOwner(userId, documentId) && !isCollaborator(userId, documentId)) {
             documentMapper.addCollaborator(userId, documentId);
         }

@@ -41,4 +41,6 @@ public interface DocumentMapper extends BaseMapper<Document> {
             "WHERE d.owner_id = #{userId} OR ud.user_id = #{userId}")
     List<DocumentInfoDto> getDocumentInfoListByUserId(@Param("userId") Integer userId);
 
+    @Select("SELECT COUNT(1) FROM document WHERE id = #{documentId}")
+    boolean existsDocument(@Param("documentId") Integer documentId);
 }
