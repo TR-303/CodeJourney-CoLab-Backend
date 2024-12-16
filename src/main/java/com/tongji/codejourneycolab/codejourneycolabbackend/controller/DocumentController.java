@@ -72,9 +72,8 @@ public class DocumentController {
         }
     }
 
-    /// TODO: insert into relation table
     @PostMapping("/connectService")
-    public ResponseEntity<String> connectService(@RequestAttribute Integer id, @RequestParam String invitationCode) {
+    public ResponseEntity<String> connectService(@RequestAttribute Integer id, @RequestBody String invitationCode) {
         try {
             Integer documentId =  documentService.joinCollaboration(id, invitationCode);
             return ResponseEntity.ok("success, documentId: " + documentId.toString());
