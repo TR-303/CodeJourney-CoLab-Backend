@@ -133,6 +133,7 @@ public class DocumentServiceImpl implements DocumentService {
         Document newDocument = new Document();
         newDocument.setOwnerId(ownerId);
         newDocument.setTitle(title);
+        newDocument.setCode("");
 
         // 插入新文档记录并获取生成的文档 ID
         documentMapper.createDocument(newDocument);
