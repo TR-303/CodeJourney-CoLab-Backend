@@ -11,14 +11,13 @@ import java.util.List;
 public interface DocumentMapper extends BaseMapper<Document> {
 
     @Select("SELECT EXISTS(SELECT 1 FROM user_document WHERE user_id = #{userId} AND document_id = #{documentId})")
-    boolean checkAccess(@Param("userId") Integer userId, @Param("documentId") Integer documentId);
+    boolean isCollaborator(@Param("userId") Integer userId, @Param("documentId") Integer documentId);
 
     @Select("SELECT owner_id FROM document WHERE id = #{documentId}")
-    Integer getDocumentOwner(@Param("documentId") Integer documentId);
+    Integer getOwnerId(@Param("documentId") Integer documentId);
 
     @Insert("INSERT INTO user_document (user_id, document_id) VALUES (#{targetUserId}, #{documentId})")
-    void addAccess(@Param("targetUserId") Integer targetUserId, @Param("documentId") Integer documentId);
-
+    void addCollaborator(@Param("targetUserId") Integer targetUserId, @Param("documentId") Integer documentId);
 
     @Select("SELECT id, owner_id, create_time, last_modified_time, title " +
             "FROM document WHERE id = #{docId}")

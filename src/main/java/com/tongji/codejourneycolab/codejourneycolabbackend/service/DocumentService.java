@@ -1,7 +1,6 @@
 package com.tongji.codejourneycolab.codejourneycolabbackend.service;
 
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
-import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Document;
 
 import java.util.List;
 
@@ -11,13 +10,11 @@ public interface DocumentService {
 
     Boolean isOwner(Integer userId, Integer documentId);
 
-    Boolean hasAccess(Integer userId, Integer documentId);
+    Boolean isCollaborator(Integer userId, Integer documentId);
 
-    void addAccess(Integer ownerId, Integer documentId, Integer targetUserId);
+    Integer joinCollaboration(Integer userId, String colabCode);
 
-    void deleteAccess(Integer ownerId, Integer documentId, Integer targetUserId);
-
-    Document getDocument(Integer userId, Integer documentId);
+    String getContent(Integer userId, Integer documentId);
 
     DocumentInfoDto getDocumentInfo(Integer userId , Integer documentId);
 
@@ -29,9 +26,6 @@ public interface DocumentService {
 
     String getDocumentShareCode(Integer ownerId, Integer documentId);
 
-    Integer getDocumentIdBySharingCode(String invitationCode);
-
     List<DocumentInfoDto> getDocumentInfoList(Integer userId);
 
-    void openShareDBService(String code);
 }

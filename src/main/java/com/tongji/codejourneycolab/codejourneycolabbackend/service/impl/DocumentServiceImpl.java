@@ -2,6 +2,9 @@ package com.tongji.codejourneycolab.codejourneycolabbackend.service.impl;
 
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Document;
+import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocInvitationCodeException;
+import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocPermissionException;
+import com.tongji.codejourneycolab.codejourneycolabbackend.exception.InvalidDocLenException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.mapper.DocumentMapper;
 import com.tongji.codejourneycolab.codejourneycolabbackend.service.DocumentService;
 
@@ -31,76 +34,56 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public Boolean isOwner(Integer userId, Integer documentId) {
-        Integer ownerId = documentMapper.getDocumentOwner(documentId);
-
+        Integer ownerId = documentMapper.getOwnerId(documentId);
         return ownerId != null && ownerId.equals(userId);
     }
 
-
     @Override
-    public Boolean hasAccess(Integer userId, Integer documentId) {
+    public Boolean isCollaborator(Integer userId, Integer documentId) {
         // * -4242 用于标识sharedb服务器
         if (userId == -4242) return true;
-        // 检查用户是否有访问权限
-        return documentMapper.checkAccess(userId, documentId);
-    }
-
-
-    @Override
-    public void addAccess(Integer ownerId, Integer documentId, Integer targetUserId) {
-
-        // 1. 检查当前用户是否是文档所有者
-        if (!isOwner(ownerId, documentId)) {
-            throw new RuntimeException("发起人不是文档的主人");
-        }
-
-        // 2. 检查目标用户是否已有权限
-        if (documentMapper.checkAccess(targetUserId, documentId)) {
-            throw new RuntimeException("目标用户已是协作者");
-        }
-
-        try {
-            documentMapper.addAccess(targetUserId, documentId);
-        } catch (DuplicateKeyException e) {
-            throw new RuntimeException("未能添加协作者");
-        }
-
-    }
-
-
-    @Override
-    public void deleteAccess(Integer ownerId, Integer documentId, Integer targetUserId) {
-        if (!isOwner(ownerId, documentId)) {
-            throw new RuntimeException("发起人不是文档的主人");
-        }
-
-        if (!documentMapper.checkAccess(targetUserId, documentId)) {
-            throw new RuntimeException("目标用户不是协作者");
-        }
-
-        try {
-            documentMapper.addAccess(targetUserId, documentId);
-        } catch (DuplicateKeyException e) {
-            throw new RuntimeException("未能删除协作者");
-        }
+        return documentMapper.isCollaborator(userId, documentId);
     }
 
     @Override
-    public Document getDocument(Integer userId, Integer documentId) {
-        if (!isOwner(userId, documentId) && !hasAccess(userId, documentId)) {
-            throw new RuntimeException("无权查看文档");
+    public Integer joinCollaboration(Integer userId, String colabCode) {
+
+        ///  为文档添加协作者
+        Integer documentId = getSharedId(colabCode);
+
+        if (!isOwner(userId, documentId) && !isCollaborator(userId, documentId)) {
+            documentMapper.addCollaborator(userId, documentId);
         }
 
-        try {
-            return documentMapper.selectById(documentId);
-        } catch (DuplicateKeyException e) {
-            throw new RuntimeException("未能获取文档");
+        ///  发送POST请求到协作服务器
+        String content = documentMapper.selectById(documentId).getCode();
+        // 请求体内容（JSON数据）
+        String jsonPayload = "{\"docCode\": \"" + colabCode + "\", \"content\": \"" + content + "\"}";
+
+        // 设置请求头
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // 创建 HttpEntity，包含请求体和头部
+        HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
+
+        // 发送 POST 请求
+        ResponseEntity<String> result = restTemplate.exchange(sharedbUrl, HttpMethod.POST, entity, String.class);
+
+        return documentId;
+    }
+
+    @Override
+    public String getContent(Integer userId, Integer documentId) {
+        if (!isOwner(userId, documentId) && !isCollaborator(userId, documentId)) {
+            throw new DocPermissionException("No permission to access this document.");
         }
+        return documentMapper.selectById(documentId).getCode();
     }
 
     @Override
     public DocumentInfoDto getDocumentInfo(Integer userId, Integer documentId) {
-        if (!isOwner(userId, documentId) && !hasAccess(userId, documentId)) {
+        if (!isOwner(userId, documentId) && !isCollaborator(userId, documentId)) {
             throw new RuntimeException("无权查看文档信息");
         }
 
@@ -116,12 +99,8 @@ public class DocumentServiceImpl implements DocumentService {
 
         // 检查是否是文档所有者
         if (!isOwner(ownerId, documentId)) {
-            throw new RuntimeException("你没有权限删除此文档");
+            throw new DocPermissionException("No permission to this document.");
         }
-
-//        if (!documentMapper.exists(documentId)) {
-//            throw new ResourceNotFoundException("文档不存在，文档 ID：" + documentId);
-//        }
 
         // 删除文档
         documentMapper.deleteDocument(documentId);
@@ -144,15 +123,15 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public void updateContent(Integer userId, String documentCode, String newContent) {
-//        // 检查文档是否存在
-//        if (!documentMapper.exists(documentId)) {
-//            throw new RuntimeException("文档不存在，文档 ID：" + documentId);
-//        }
-        Integer documentId = getDocumentIdBySharingCode(documentCode);
 
-        // 检查用户是否有权限更新文档
-        if (!isOwner(userId, documentId) && !hasAccess(userId, documentId)) {
-            throw new RuntimeException("你没有权限修改此文档");
+        Integer documentId  = getSharedId(documentCode);
+
+        if (!isOwner(userId, documentId) && !isCollaborator(userId, documentId)) {
+            throw new DocPermissionException("No permission to this document.");
+        }
+
+        if(newContent.length()>500000){
+            throw new InvalidDocLenException("Document too long. Failed to save.");
         }
 
         // 更新文档内容
@@ -161,27 +140,11 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public String getDocumentShareCode(Integer ownerId, Integer documentId) {
-//        // 检查是否是文档所有者
-//        if (!isOwner(ownerId, documentId)) {
-//            throw new RuntimeException("你没有权限生成共享码");
-//        }
-
-        try {
-            // 生成共享码
-            return createSharingCode(documentId);
-        } catch (Exception e) {
-            throw new RuntimeException("生成共享码失败", e);
+        // 检查是否是文档所有者
+        if (!isOwner(ownerId, documentId)) {
+            throw new DocPermissionException("You are not owner of this document.");
         }
-    }
-
-    public Integer getDocumentIdBySharingCode(String sharingCode) {
-
-        try {
-            // 生成共享码
-            return getSharedId(sharingCode);
-        } catch (Exception e) {
-            throw new RuntimeException("共享码还原失败", e);
-        }
+        return createSharingCode(documentId);
     }
 
     @Override
@@ -197,72 +160,52 @@ public class DocumentServiceImpl implements DocumentService {
         return documentList;
     }
 
-    @Override
-    public void openShareDBService(String code) {
-        Integer id;
+    /// 下为与协作码相关的函数
+
+    private Integer getSharedId(String sharingCode)  throws DocInvitationCodeException {
         try {
-            id = getSharedId(code);
+            String key = "d0_n0t_PUbL1SH_TH1S_K3Y";
+            // 补全密钥长度
+            key = padKeyToValidLength(key);
+            // Initialize Cipher for AES decryption
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            byte[] keyBytes = key.getBytes();
+            SecretKeySpec secret = new SecretKeySpec(keyBytes, "AES");
+
+            // Decode the sharingCode from Base64
+            byte[] decodedBytes = Base64.getDecoder().decode(sharingCode);
+
+            // Decrypt the bytes
+            cipher.init(Cipher.DECRYPT_MODE, secret);
+            byte[] decryptedBytes = cipher.doFinal(decodedBytes);
+
+            // Convert the decrypted bytes to a string (the original documentId)
+            String documentIdStr = new String(decryptedBytes);
+
+            // Return as an Integer
+            return Integer.parseInt(documentIdStr);
         } catch (Exception e) {
-            throw new RuntimeException("获取文档ID失败");
+            throw new DocInvitationCodeException("Failed to decode: " + e.getMessage());
         }
-
-        String content = documentMapper.selectById(id).getCode();
-
-        // 请求体内容（JSON数据）
-        String jsonPayload = "{\"docCode\": \"" + code + "\", \"content\": \"" + content + "\"}";
-
-
-        // 设置请求头
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        // 创建 HttpEntity，包含请求体和头部
-        HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
-
-        // 发送 POST 请求
-        ResponseEntity<String> result = restTemplate.exchange(sharedbUrl, HttpMethod.POST, entity, String.class);
-        System.out.println(result.getBody());
-        /// TODO: dyx might return false, add try catch here
     }
 
+    private String createSharingCode(Integer documentId) throws DocInvitationCodeException {
+        try {
+            String data = documentId.toString();
+            String key = "d0_n0t_PUbL1SH_TH1S_K3Y";       //key AES-16/24/32byte DES-8byte 3DES-8/16/24byte // DO NOT PUBLISH
+            key = padKeyToValidLength(key);
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            byte[] keyBytes = key.getBytes();
+            SecretKeySpec secret = new SecretKeySpec(keyBytes, "AES");
+            cipher.init(Cipher.ENCRYPT_MODE, secret);
+            byte[] bytes = cipher.doFinal(data.getBytes());
+            String sharingCode = Base64.getEncoder().encodeToString(bytes);
 
-    private Integer getSharedId(String sharingCode) throws Exception {
-        String key = "d0_n0t_PUbL1SH_TH1S_K3Y";
-// 补全密钥长度
-        key = padKeyToValidLength(key);
-        // Initialize Cipher for AES decryption
-        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-        byte[] keyBytes = key.getBytes();
-        SecretKeySpec secret = new SecretKeySpec(keyBytes, "AES");
-
-        // Decode the sharingCode from Base64
-        byte[] decodedBytes = Base64.getDecoder().decode(sharingCode);
-
-        // Decrypt the bytes
-        cipher.init(Cipher.DECRYPT_MODE, secret);
-        byte[] decryptedBytes = cipher.doFinal(decodedBytes);
-
-        // Convert the decrypted bytes to a string (the original documentId)
-        String documentIdStr = new String(decryptedBytes);
-
-        // Return as an Integer
-        return Integer.parseInt(documentIdStr);
-    }
-
-
-    private String createSharingCode(Integer documentId) throws Exception {
-        String data = documentId.toString();
-        String key = "d0_n0t_PUbL1SH_TH1S_K3Y";       //key AES-16/24/32byte DES-8byte 3DES-8/16/24byte // DO NOT PUBLISH
-        key = padKeyToValidLength(key);
-        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-        byte[] keyBytes = key.getBytes();
-        SecretKeySpec secret = new SecretKeySpec(keyBytes, "AES");
-        cipher.init(Cipher.ENCRYPT_MODE, secret);
-        byte[] bytes = cipher.doFinal(data.getBytes());
-        String sharingCode = Base64.getEncoder().encodeToString(bytes);
-
-        System.out.println(sharingCode);
-        return sharingCode;
+            System.out.println(sharingCode);
+            return sharingCode;
+        } catch (Exception e) {
+            throw new DocInvitationCodeException("Failed to encode: " + e.getMessage());
+        }
     }
 
     private static String padKeyToValidLength(String key) {
