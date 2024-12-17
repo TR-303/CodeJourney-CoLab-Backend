@@ -88,8 +88,7 @@ public class DocumentController {
     @PostMapping("/connectServiceById")
     public ResponseEntity<String> connectServiceById(@RequestAttribute Integer id, @RequestParam Integer documentId) {
         try {
-            documentService.joinCollaborationById(id, documentId);
-            return ResponseEntity.ok(documentId.toString());
+            return ResponseEntity.ok(documentService.joinCollaborationById(id, documentId));
         } catch (DocInvitationCodeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }catch (DocPermissionException e) {

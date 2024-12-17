@@ -65,7 +65,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public void joinCollaborationById(Integer userId, Integer documentId) {
+    public String joinCollaborationById(Integer userId, Integer documentId) {
 
         boolean docExists = documentMapper.existsDocument(documentId);
         boolean hasAccess = isOwner(userId, documentId) || isCollaborator(userId, documentId);
@@ -77,6 +77,7 @@ public class DocumentServiceImpl implements DocumentService {
         ///  发送POST请求到协作服务器
         String content = documentMapper.selectById(documentId).getCode();
         createSharedbService(createSharingCode(documentId),content);
+        return createSharingCode(documentId);
     }
 
     @Override

@@ -14,9 +14,9 @@ public interface DocumentService {
 
     Integer joinCollaborationByCode(Integer userId, String colabCode);
 
-    public void joinCollaborationById(Integer userId, Integer documentId);
+    String joinCollaborationById(Integer userId, Integer documentId);
 
-    public void createSharedbService(String colabCode,String content);
+    void createSharedbService(String colabCode,String content);
 
     String getContent(Integer userId, Integer documentId);
 
