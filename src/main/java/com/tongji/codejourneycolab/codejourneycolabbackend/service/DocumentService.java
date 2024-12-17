@@ -12,7 +12,11 @@ public interface DocumentService {
 
     Boolean isCollaborator(Integer userId, Integer documentId);
 
-    Integer joinCollaboration(Integer userId, String colabCode);
+    Integer joinCollaborationByCode(Integer userId, String colabCode);
+
+    public void joinCollaborationById(Integer userId, Integer documentId);
+
+    public void createSharedbService(String colabCode,String content);
 
     String getContent(Integer userId, Integer documentId);
 

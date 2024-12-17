@@ -46,43 +46,46 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public Integer joinCollaboration(Integer userId, String colabCode) {
+    public Integer joinCollaborationByCode(Integer userId, String colabCode) {
 
-        ///  为文档添加协作者
         Integer documentId = getSharedId(colabCode);
 
         if(!documentMapper.existsDocument(documentId)) {
-            throw new DocPermissionException("No permission to this invitation code");
+            throw new DocPermissionException("No permission to this document.");
         }
 
-        if (!isOwner(userId, documentId) && !isCollaborator(userId, documentId)) {
+        if (!isOwner(userId, documentId) && !isCollaborator(userId, documentId)) { // 获取邀请链接的用户若无权限，应添加权限
             documentMapper.addCollaborator(userId, documentId);
         }
 
         ///  发送POST请求到协作服务器
         String content = documentMapper.selectById(documentId).getCode();
-        // 请求体内容（JSON数据）
-        String jsonPayload = "{\"docCode\": \"" + colabCode + "\", \"content\": \"" + content + "\"}";
-
-        // 设置请求头
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        // 创建 HttpEntity，包含请求体和头部
-        HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
-
-        // 发送 POST 请求
-        ResponseEntity<String> result = restTemplate.exchange(sharedbUrl, HttpMethod.POST, entity, String.class);
-
+        createSharedbService(createSharingCode(documentId),content);
         return documentId;
+    }
+
+    @Override
+    public void joinCollaborationById(Integer userId, Integer documentId) {
+
+        boolean docExists = documentMapper.existsDocument(documentId);
+        boolean hasAccess = isOwner(userId, documentId) || isCollaborator(userId, documentId);
+
+        if(!docExists || !hasAccess) {
+            throw new DocPermissionException("No permission to this document.");
+        }
+
+        ///  发送POST请求到协作服务器
+        String content = documentMapper.selectById(documentId).getCode();
+        createSharedbService(createSharingCode(documentId),content);
     }
 
     @Override
     public String getContent(Integer userId, Integer documentId) {
         if (!isOwner(userId, documentId) && !isCollaborator(userId, documentId)) {
-            throw new DocPermissionException("No permission to access this document.");
+            throw new DocPermissionException("No permission to this document.");
         }
-        return documentMapper.selectById(documentId).getCode();
+        Document document = documentMapper.selectById(documentId);
+        return document.getCode();
     }
 
     @Override
@@ -145,8 +148,8 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     public String getDocumentShareCode(Integer ownerId, Integer documentId) {
         // 检查是否是文档所有者
-        if (!isOwner(ownerId, documentId)) {
-            throw new DocPermissionException("You are not owner of this document.");
+        if (!isOwner(ownerId, documentId) && !isCollaborator(ownerId, documentId)) {
+            throw new DocPermissionException("You are not owner or collaborator of this document.");
         }
         return createSharingCode(documentId);
     }
@@ -163,6 +166,23 @@ public class DocumentServiceImpl implements DocumentService {
 
         return documentList;
     }
+
+    @Override
+    public void createSharedbService(String colabCode,String content) {
+        // 请求体内容（JSON数据）
+        String jsonPayload = "{\"docCode\": \"" + colabCode + "\", \"content\": \"" + content + "\"}";
+
+        // 设置请求头
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // 创建 HttpEntity，包含请求体和头部
+        HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
+
+        // 发送 POST 请求
+        ResponseEntity<String> result = restTemplate.exchange(sharedbUrl, HttpMethod.POST, entity, String.class);
+    }
+
 
     /// 下为与协作码相关的函数
 
@@ -223,5 +243,7 @@ public class DocumentServiceImpl implements DocumentService {
         // 如果密钥超过 32 字节，则截断
         return key.substring(0, 32);
     }
+
+
 }
 

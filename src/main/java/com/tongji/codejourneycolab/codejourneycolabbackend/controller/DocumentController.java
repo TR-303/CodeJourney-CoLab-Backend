@@ -73,10 +73,22 @@ public class DocumentController {
         }
     }
 
-    @PostMapping("/connectService")
-    public ResponseEntity<String> connectService(@RequestAttribute Integer id, @RequestBody InvitationCodeDTO invitation) {
+    @PostMapping("/connectServiceByInvitation")
+    public ResponseEntity<String> connectServiceByInvitation(@RequestAttribute Integer id, @RequestBody InvitationCodeDTO invitation) {
         try {
-            Integer documentId =  documentService.joinCollaboration(id, invitation.getInvitationCode());
+            Integer documentId =  documentService.joinCollaborationByCode(id, invitation.getInvitationCode());
+            return ResponseEntity.ok(documentId.toString());
+        } catch (DocInvitationCodeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }catch (DocPermissionException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/connectServiceById")
+    public ResponseEntity<String> connectServiceById(@RequestAttribute Integer id, @RequestParam Integer documentId) {
+        try {
+            documentService.joinCollaborationById(id, documentId);
             return ResponseEntity.ok(documentId.toString());
         } catch (DocInvitationCodeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
