@@ -2,11 +2,6 @@ package com.tongji.codejourneycolab.codejourneycolabbackend.service.codeExecutio
 
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.SubmissionDetail;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.TestCase;
-import org.python.core.PyFunction;
-import org.python.core.PyInteger;
-import org.python.core.PyObject;
-import org.python.core.PyString;
-import org.python.util.PythonInterpreter;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -47,14 +42,13 @@ public class PythonExecutionService {
             String expectedOutput = testCase.getOutput();  // 获取期望的输出
 
             try {
-                // 将输入拆分为多个部分（通过空格分隔）
-                String[] inputArgs = input.split("\\s+");
-
                 // 构建传递给 Python 程序的参数
                 String[] args;
-                if (inputArgs.length > 0) {
+                if (input != null) {
+                    // 将输入拆分为多个部分（通过空格分隔）
+                    String[] inputArgs = input.split("\\s+");
                     // 将输入拆分后的每个部分作为命令行参数传递给 Python 程序
-                    args = new String[inputArgs.length + 2]; // +2: 一个是 Python 解释器路径，另一个是代码文件路径
+                    args = new String[inputArgs.length + 2];
                     args[0] = pyPath;
                     args[1] = codeFilePath;
                     System.arraycopy(inputArgs, 0, args, 2, inputArgs.length); // 将所有输入参数复制到 args 中
