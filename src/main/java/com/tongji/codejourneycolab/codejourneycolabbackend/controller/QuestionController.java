@@ -98,4 +98,10 @@ public class QuestionController {
         questionMapper.addSubmission(result);
         return result;
     }
+
+    @PostMapping("/runWithInput")
+    public String runQuestion(@RequestParam String code, @RequestParam String input) {
+        PythonExecutionService pythonExecutionService = new PythonExecutionService();
+        return pythonExecutionService.executeWithInput(code, input);
+    }
 }
