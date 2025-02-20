@@ -1,6 +1,7 @@
 package com.tongji.codejourneycolab.codejourneycolabbackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.LoginResponseDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.UserInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.User;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.InvalidCredentialsException;
@@ -13,6 +14,7 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.service.AccountServic
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -29,7 +31,7 @@ public class AccountServiceImpl implements AccountService {
     private InvalidTokenManager invalidTokenManager;
 
     @Override
-    public String login(String identity, String password) throws InvalidCredentialsException {
+    public LoginResponseDto login(String identity, String password) throws InvalidCredentialsException {
         if (identity == null || password == null) {
             throw new InvalidCredentialsException("User not found or invalid password");
         }
@@ -44,7 +46,7 @@ public class AccountServiceImpl implements AccountService {
             throw new InvalidCredentialsException("User not found or invalid password");
         }
 
-        return jwtTokenProvider.generateToken(user.getId());
+        return new LoginResponseDto(jwtTokenProvider.generateToken(user.getId()), user.getRole());
     }
 
     @Override
@@ -111,5 +113,19 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void logout(String token) {
         invalidTokenManager.addInvalidToken(token);
+    }
+
+    @Override
+    public void teacherQualifyById(Integer id, MultipartFile[] files) {
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new InvalidCredentialsException("User not found");
+        }
+        if(user.getRole().equals("TEACHER")){
+            throw new InvalidInformationException("User already qualified as a teacher");
+        }
+        // TODO: 上传证书和职业资格证书并保存到数据库
+        user.setRole("TEACHER");
+        userMapper.updateById(user);
     }
 }

@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/account")
@@ -19,7 +20,7 @@ public class AccountController {
     private AccountService accountService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDto loginRequestDto) {
+    public ResponseEntity<Object> login(@RequestBody LoginRequestDto loginRequestDto) {
         try {
             return ResponseEntity.ok(accountService.login(loginRequestDto.getIdentity(), loginRequestDto.getPassword()));
         } catch (InvalidCredentialsException e) {
@@ -67,5 +68,17 @@ public class AccountController {
             return ResponseEntity.ok("Logout success");
         }
         return ResponseEntity.internalServerError().body("Unexpected internal server error");
+    }
+
+    @PostMapping("/tqc")
+    public ResponseEntity<String> teacherQualify(@RequestAttribute Integer id, @RequestParam("files") MultipartFile[] files) {
+        try {
+            accountService.teacherQualifyById(id, files);
+            return ResponseEntity.ok("Teacher qualify success");
+        } catch (InvalidCredentialsException e) {
+            return ResponseEntity.status(401).body(e.getMessage());
+        } catch (InvalidInformationException e) {
+            return ResponseEntity.status(409).body(e.getMessage());
+        }
     }
 }
