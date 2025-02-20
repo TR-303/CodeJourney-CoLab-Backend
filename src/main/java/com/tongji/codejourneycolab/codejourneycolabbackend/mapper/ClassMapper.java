@@ -3,6 +3,7 @@ package com.tongji.codejourneycolab.codejourneycolabbackend.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.ClassInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.HomeworkDto;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.StuStatusDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.UserInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Clas;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.ClassNotice;
@@ -39,4 +40,6 @@ public interface ClassMapper extends BaseMapper<Clas> {
 
     @Insert("INSERT INTO homework(class_id,question_id,due_time) VALUES(#{classId},#{questionId},#{dueTime})")
     int insertHomework(Homework newHomework);
+
+    List<StuStatusDto> getStuHomework( @Param("classId")Integer classId, @Param("problemId") Integer problemId);
 }

@@ -129,4 +129,17 @@ public class ClassController {
             return ResponseEntity.status(500).build();
         }
     }
+
+    @GetMapping("/getStuHomework")
+    public ResponseEntity<List<StuStatusDto>> getStuHomework(@RequestParam Integer classId,
+                                                      @RequestParam Integer problemId) {
+        try {
+            List<StuStatusDto> stuStatus = classService.getStuHomework(classId, problemId);
+            return ResponseEntity.ok(stuStatus);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
+
+    }
 }

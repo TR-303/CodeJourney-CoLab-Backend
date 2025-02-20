@@ -38,5 +38,29 @@
                 WHERE rn = 1;
         </select>
 
+        <select id="getStuHomework" resultType="com.tongji.codejourneycolab.codejourneycolabbackend.dto.StuStatusDto">
+                SELECT
+                s.id AS studentId,
+                s.username AS name,
+                CASE
+                WHEN MAX(CASE WHEN CAST(sub.state AS UNSIGNED) = 1 THEN 1 ELSE 0 END) = 1 THEN 'passed'
+                WHEN MAX(CASE WHEN CAST(sub.state AS UNSIGNED) = 0 THEN 1 ELSE 0 END) = 1 THEN 'failed'
+                WHEN COUNT(sub.attempt_num) = 0 THEN 'not tried'
+                ELSE 'unknown'  -- 你可以添加默认的“未知”状态
+                END AS status
+                FROM
+                user s
+                LEFT JOIN user_class uc ON s.id = uc.user_id
+                LEFT JOIN homework h ON uc.class_id = h.class_id
+                LEFT JOIN submission sub ON h.question_id = sub.question_id
+                AND sub.submit_time <![CDATA[<]]> h.due_time
+                                      AND sub.user_id = s.id
+                                      WHERE
+                                      h.class_id = #{classId}
+                AND h.question_id = #{problemId}
+                GROUP BY
+                s.id, s.username;
+
+        </select>
 
 </mapper>

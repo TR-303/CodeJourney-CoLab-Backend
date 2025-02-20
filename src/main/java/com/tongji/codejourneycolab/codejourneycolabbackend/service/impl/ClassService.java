@@ -2,6 +2,7 @@ package com.tongji.codejourneycolab.codejourneycolabbackend.service.impl;
 
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.ClassInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.HomeworkDto;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.StuStatusDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.UserInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Clas;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.ClassNotice;
@@ -155,4 +156,15 @@ public class ClassService implements IClassService {
         }
     }
 
+    @Override
+    public List<StuStatusDto> getStuHomework(Integer classId, Integer problemId) {
+        try {
+            if (classId == null || problemId == null) {
+                return null;
+            }
+            return classMapper.getStuHomework(classId, problemId);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -2,6 +2,7 @@ package com.tongji.codejourneycolab.codejourneycolabbackend.service;
 
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.ClassInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.HomeworkDto;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.StuStatusDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.UserInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.ClassNotice;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Homework;
@@ -29,4 +30,6 @@ public interface IClassService {
     List<HomeworkDto> getHomeworkList(Integer stuId, Integer classId);
 
     Boolean createHomework(Integer classId, Integer problemId, Date dueTime);
+
+    List<StuStatusDto> getStuHomework(Integer classId, Integer problemId);
 }
