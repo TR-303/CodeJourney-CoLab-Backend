@@ -15,7 +15,7 @@ public class Homework{
     @TableField("class_id")
     private Integer classId;
 
-    // 对应 id 字段，为主键且自增
+    // 对应 question id 字段
     @TableField("question_id")
     private Integer questionId;
 

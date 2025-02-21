@@ -8,13 +8,16 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Clas;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.ClassNotice;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Homework;
 import com.tongji.codejourneycolab.codejourneycolabbackend.mapper.ClassMapper;
+import com.tongji.codejourneycolab.codejourneycolabbackend.mapper.UserMapper;
 import com.tongji.codejourneycolab.codejourneycolabbackend.service.IClassService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestAttribute;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -25,10 +28,17 @@ public class ClassService implements IClassService {
 
     @Autowired
     private ClassMapper classMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
-    public List<ClassInfoDto> getClassList(){
-        return classMapper.getClassList();
+    public List<ClassInfoDto> getClassList(Integer userId){
+        // 先判断用户是否为老师
+        if(Objects.equals(userMapper.getRoleById(userId), "TEACHER")){
+            return classMapper.getClassListByTeacher(userId);
+        }else {
+            return classMapper.getClassListByStudent(userId);
+        }
     }
 
     @Override
@@ -110,7 +120,6 @@ public class ClassService implements IClassService {
                 return false;
             }
             ClassNotice newNotice = new ClassNotice(classId, title, content);
-            newNotice.setCreateTime(new Date());
             int result = classMapper.insertNotice(newNotice);
             if (result > 0) {
                 return true;
@@ -143,7 +152,6 @@ public class ClassService implements IClassService {
                 return false;
             }
             Homework newHomework = new Homework(classId, problemId, dueTime);
-            newHomework.setDueTime(new Date());
             int result = classMapper.insertHomework(newHomework);
             if(result > 0){
                 return true;

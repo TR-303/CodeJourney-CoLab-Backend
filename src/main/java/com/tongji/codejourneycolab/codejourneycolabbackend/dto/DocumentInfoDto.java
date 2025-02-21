@@ -1,5 +1,6 @@
 package com.tongji.codejourneycolab.codejourneycolabbackend.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -10,7 +11,9 @@ public class DocumentInfoDto {
     private Integer id;
     private Integer ownerId;
     private String ownerName;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
     private LocalDateTime createTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
     private LocalDateTime lastModifiedTime;
     private String title;
 }

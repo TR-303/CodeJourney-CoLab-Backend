@@ -5,7 +5,5 @@ import lombok.Data;
 public class ClassInfoDto {
     private Integer id;
     private String className;
-    private Integer teacherId;
-    private String teacherName;
-    private Integer capacity;
+    private String teacher;
 }

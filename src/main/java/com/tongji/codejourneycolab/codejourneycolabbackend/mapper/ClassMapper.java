@@ -15,8 +15,19 @@ import java.util.List;
 @Mapper
 public interface ClassMapper extends BaseMapper<Clas> {
 
-    @Select("SELECT c.id, c.classname, c.teacher_id, u.username as teacher_name, c.capacity FROM class as c left join user as u on c.teacher_id = u.id")
-    List<ClassInfoDto> getClassList();
+    @Select("SELECT c.id, c.classname, u.username as teacher " +
+            "FROM class as c " +
+            "INNER JOIN user as u " +
+            "ON c.teacher_id = u.id " +
+            "WHERE u.id = #{userId}")
+    List<ClassInfoDto> getClassListByTeacher(@Param("userId") Integer userId);
+
+    @Select("SELECT c.id, c.classname, u.username as teacher " +
+            "FROM user_class uc " +
+            "JOIN class c ON uc.class_id = c.id " +
+            "JOIN user u ON c.teacher_id = u.id " +
+            "WHERE uc.user_id = #{userId}")
+    List<ClassInfoDto> getClassListByStudent(@Param("userId") Integer userId);
 
     @Insert("INSERT INTO user_class(user_id,class_id) VALUES(#{userId},#{classId})")
     void joinClass(@Param("userId") Integer userId, @Param("classId") Integer classId);

@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 public interface IClassService {
-    List<ClassInfoDto> getClassList();
+    List<ClassInfoDto> getClassList(Integer userId);
 
     String generateJoinCode(Integer classId);
 

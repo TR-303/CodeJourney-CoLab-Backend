@@ -21,9 +21,9 @@ public class ClassController {
 
     // 获取班级列表
     @GetMapping("/getclasslist")
-    public ResponseEntity<List<ClassInfoDto>> getClasses() {
+    public ResponseEntity<List<ClassInfoDto>> getClasses(@RequestAttribute Integer id) {
         try {
-            List<ClassInfoDto> classList = classService.getClassList();
+            List<ClassInfoDto> classList = classService.getClassList(id);
             return ResponseEntity.ok(classList);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
@@ -33,9 +33,9 @@ public class ClassController {
 
     // 加入班级
     @PostMapping("/join")
-    public ResponseEntity<Boolean> joinClass(@RequestAttribute Integer id,@RequestBody String joinCode) {
+    public ResponseEntity<Boolean> joinClass(@RequestAttribute Integer id,@RequestBody JoinClassCodeDto joinCode) {
         try {
-            Boolean result = classService.joinClass(joinCode,id);
+            Boolean result = classService.joinClass(joinCode.getClassCode(),id);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
@@ -45,7 +45,7 @@ public class ClassController {
 
     // 创建班级
     @PostMapping("/create")
-    public ResponseEntity<Boolean> createClass(@RequestAttribute Integer id,@RequestBody String className) {
+    public ResponseEntity<Boolean> createClass(@RequestAttribute Integer id,@RequestParam String className) {
         try {
             Boolean result = classService.createClass(id,className);
             return ResponseEntity.ok(result);

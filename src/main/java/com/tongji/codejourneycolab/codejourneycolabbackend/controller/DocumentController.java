@@ -2,6 +2,7 @@ package com.tongji.codejourneycolab.codejourneycolabbackend.controller;
 
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentContentDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.FileInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.InvitationCodeDTO;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocInvitationCodeException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocPermissionException;
@@ -22,6 +23,11 @@ public class DocumentController {
     @GetMapping("/getfilelist")
     public ResponseEntity<List<DocumentInfoDto>> getFileList(@RequestAttribute Integer id) {
         return ResponseEntity.ok(documentService.getDocumentInfoList(id)); /// TODO: handle exception
+    }
+
+    @GetMapping("/getfileinfo")
+    public ResponseEntity<FileInfoDto> getFileListById(@RequestAttribute Integer id, @RequestParam Integer documentId) {
+        return ResponseEntity.ok(documentService.getFileInfo(id, documentId));
     }
 
     @GetMapping("/getcontent")

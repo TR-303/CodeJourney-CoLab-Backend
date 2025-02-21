@@ -1,6 +1,7 @@
 package com.tongji.codejourneycolab.codejourneycolabbackend.service;
 
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.FileInfoDto;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public interface DocumentService {
 
     String getContent(Integer userId, Integer documentId);
 
-    DocumentInfoDto getDocumentInfo(Integer userId , Integer documentId);
+    FileInfoDto getFileInfo(Integer userId , Integer documentId);
 
     void updateContent(Integer userId ,String documentCode, String new_content);
 

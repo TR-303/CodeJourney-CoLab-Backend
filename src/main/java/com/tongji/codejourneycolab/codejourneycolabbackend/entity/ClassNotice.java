@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
@@ -29,9 +30,10 @@ public class ClassNotice {
 
     // 对应 create_time 字段
     @TableField("create_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
     private Date createTime;
 
-    // 新增 teacherName 字段（你可能需要在返回数据时填充该字段）
+    // 新增 teacherName 字段
     @TableField(exist = false) // 不直接映射到数据库
     private String teacherName;
 

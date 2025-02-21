@@ -19,7 +19,6 @@ public class QuestionController {
     @GetMapping("/getList")
     public List<Question> getQuestionList() {
         List<Question> questionList = questionMapper.getQuestionList();
-        System.out.print("questionList:" + questionList);
         return questionList;
     }
 

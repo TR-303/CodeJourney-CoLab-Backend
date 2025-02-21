@@ -2,6 +2,7 @@ package com.tongji.codejourneycolab.codejourneycolabbackend.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.FileInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Document;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocInvitationCodeException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocPermissionException;
@@ -93,13 +94,13 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public DocumentInfoDto getDocumentInfo(Integer userId, Integer documentId) {
+    public FileInfoDto getFileInfo(Integer userId, Integer documentId) {
         if (!isOwner(userId, documentId) && !isCollaborator(userId, documentId)) {
             throw new RuntimeException("无权查看文档信息");
         }
 
         try {
-            return documentMapper.getDocumentInfo(documentId);
+            return documentMapper.getFileInfo(documentId);
         } catch (DuplicateKeyException e) {
             throw new RuntimeException("未能获取文档信息");
         }
