@@ -13,12 +13,12 @@ import java.util.regex.*;
 @Service
 public class PythonExecutionService {
 
-    String pyPath = "E:\\python39\\python.exe";  // Python解释器路径
+    String pyPath = "C:\\Users\\vapacity\\AppData\\Local\\Programs\\Python\\Python311\\python.exe";  // Python解释器路径
 
     String codeFilePath = "E:\\temp_code.py";
 
     public SubmissionDetail executePythonCode(String code, List<TestCase> testCases) {
-        String updatedCode = "import sys; " + code;
+        String updatedCode = "import sys\n" + code;
         int inputCount = 1;
 
         Pattern pattern = Pattern.compile("input\\(\\)");
@@ -136,7 +136,7 @@ public class PythonExecutionService {
     }
 
     public String executeWithInput(String code, String input) {
-        String updatedCode = "import sys; " + code;
+        String updatedCode = "import sys\n" + code;
         int inputCount = 1;
 
         Pattern pattern = Pattern.compile("input\\(\\)");

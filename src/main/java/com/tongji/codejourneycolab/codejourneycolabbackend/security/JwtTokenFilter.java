@@ -53,6 +53,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             try {
                 Integer id = jwtTokenProvider.tryGetIdFromToken(token);
                 request.setAttribute("id", id);
+                System.out.println("id: " + id);
                 var authentication = new UsernamePasswordAuthenticationToken(id, null, List.of());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 filterChain.doFilter(request, response);

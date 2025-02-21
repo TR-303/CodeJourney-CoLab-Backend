@@ -56,7 +56,7 @@ public class SecurityConfig {
     public List<String> authorizedRoutes() {
         return List.of("/helloauthorized","/hellowithparam", "/account/getinfo", "/account/editinfo","/account/logout",
                 "/question/getListByUser","/question/getAttemptedQuestionList","/question/getSubmissionList","/question/getSubmission","/question/run",
-                "/document/**"
+                "/document/**","/class/getclasslist","/class/join","/class/create","/class/createNotice","/class/getHomeworkList","/class/createAssignment"
         );
     }
 

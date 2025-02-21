@@ -1,6 +1,8 @@
 package com.tongji.codejourneycolab.codejourneycolabbackend.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.FileInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Document;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocInvitationCodeException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocPermissionException;
@@ -19,7 +21,9 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DocumentServiceImpl implements DocumentService {
@@ -90,13 +94,13 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public DocumentInfoDto getDocumentInfo(Integer userId, Integer documentId) {
+    public FileInfoDto getFileInfo(Integer userId, Integer documentId) {
         if (!isOwner(userId, documentId) && !isCollaborator(userId, documentId)) {
             throw new RuntimeException("无权查看文档信息");
         }
 
         try {
-            return documentMapper.getDocumentInfo(documentId);
+            return documentMapper.getFileInfo(documentId);
         } catch (DuplicateKeyException e) {
             throw new RuntimeException("未能获取文档信息");
         }
@@ -169,19 +173,37 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public void createSharedbService(String colabCode,String content) {
-        // 请求体内容（JSON数据）
-        String jsonPayload = "{\"docCode\": \"" + colabCode + "\", \"content\": \"" + content + "\"}";
+    public void createSharedbService(String colabCode, String content) {
+        try {
+            // 创建一个 Map 来存储 JSON 数据
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("docCode", colabCode);
+            requestBody.put("content", content);
 
-        // 设置请求头
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+            // 使用 Jackson 的 ObjectMapper 将 Map 转换为 JSON 字符串
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonPayload = objectMapper.writeValueAsString(requestBody);
 
-        // 创建 HttpEntity，包含请求体和头部
-        HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
+            // 设置请求头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // 发送 POST 请求
-        ResponseEntity<String> result = restTemplate.exchange(sharedbUrl, HttpMethod.POST, entity, String.class);
+            // 创建 HttpEntity，包含请求体和头部
+            HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
+
+            // 发送 POST 请求
+            ResponseEntity<String> result = restTemplate.exchange(sharedbUrl, HttpMethod.POST, entity, String.class);
+
+            // 可以根据需要处理响应结果
+            if (result.getStatusCode().is2xxSuccessful()) {
+                System.out.println("请求成功：" + result.getBody());
+            } else {
+                System.out.println("请求失败：" + result.getStatusCode());
+            }
+        } catch (Exception e) {
+            // 处理异常
+            e.printStackTrace();
+        }
     }
 
 

@@ -2,6 +2,7 @@ package com.tongji.codejourneycolab.codejourneycolabbackend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.FileInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Document;
 import org.apache.ibatis.annotations.*;
 
@@ -22,6 +23,11 @@ public interface DocumentMapper extends BaseMapper<Document> {
     @Select("SELECT id, owner_id, create_time, last_modified_time, title " +
             "FROM document WHERE id = #{docId}")
     DocumentInfoDto getDocumentInfo(@Param("docId") Integer docId);
+
+    @Select("SELECT title, user.username AS owner_name, create_time " +
+            "FROM document INNER JOIN user ON document.owner_id = user.id " +
+            "WHERE document.id = #{docId}")
+    FileInfoDto getFileInfo(@Param("docId") Integer docId);
 
     @Delete("DELETE FROM document WHERE id = #{documentId}")
     void deleteDocument(@Param("documentId") Integer documentId);

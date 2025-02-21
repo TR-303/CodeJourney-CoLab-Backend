@@ -19,7 +19,6 @@ public class QuestionController {
     @GetMapping("/getList")
     public List<Question> getQuestionList() {
         List<Question> questionList = questionMapper.getQuestionList();
-        System.out.print("questionList:" + questionList);
         return questionList;
     }
 
@@ -101,6 +100,7 @@ public class QuestionController {
 
     @PostMapping("/runWithInput")
     public String runQuestion(@RequestParam String code, @RequestParam String input) {
+        System.out.println("test");
         PythonExecutionService pythonExecutionService = new PythonExecutionService();
         return pythonExecutionService.executeWithInput(code, input);
     }
