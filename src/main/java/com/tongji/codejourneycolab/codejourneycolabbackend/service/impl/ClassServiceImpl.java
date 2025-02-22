@@ -13,7 +13,6 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.service.IClassService
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestAttribute;
 
 import java.util.Date;
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class ClassService implements IClassService {
+public class ClassServiceImpl implements IClassService {
     @Autowired
     private RedisTemplate<String, Integer> redisTemplate;
 
@@ -61,7 +60,7 @@ public class ClassService implements IClassService {
 
     @Override
     public Boolean joinClass(String joinCode,Integer userId) {
-        Integer classId =getClassIdByJoinCode(joinCode);
+        Integer classId = getClassIdByJoinCode(joinCode);
         if (classId == null) {
             return false;
         }

@@ -4,6 +4,7 @@ import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentContentDt
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.FileInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.InvitationCodeDTO;
+import com.tongji.codejourneycolab.codejourneycolabbackend.entity.User;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocInvitationCodeException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocPermissionException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.service.DocumentService;
@@ -100,5 +101,11 @@ public class DocumentController {
         }catch (DocPermissionException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
+    }
+
+    @PostMapping("/getUsersByDocumentId")
+    public ResponseEntity<List<User>> getUsersByDocumentId(@RequestAttribute Integer id, @RequestParam Integer documentId) {
+        System.out.println("getUsersByDocumentId,id:"+id);
+        return ResponseEntity.ok(documentService.getUsersByDocumentId(documentId));
     }
 }

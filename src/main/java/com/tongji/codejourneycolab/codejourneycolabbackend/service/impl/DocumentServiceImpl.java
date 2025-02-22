@@ -3,14 +3,18 @@ package com.tongji.codejourneycolab.codejourneycolabbackend.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.DocumentInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.dto.FileInfoDto;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.ShareDBResponseDto;
+import com.tongji.codejourneycolab.codejourneycolabbackend.dto.UserInfoDto;
 import com.tongji.codejourneycolab.codejourneycolabbackend.entity.Document;
+import com.tongji.codejourneycolab.codejourneycolabbackend.entity.User;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocInvitationCodeException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.DocPermissionException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.exception.InvalidDocLenException;
 import com.tongji.codejourneycolab.codejourneycolabbackend.mapper.DocumentMapper;
+import com.tongji.codejourneycolab.codejourneycolabbackend.mapper.UserMapper;
 import com.tongji.codejourneycolab.codejourneycolabbackend.service.DocumentService;
 
-import java.util.Base64;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,20 +25,22 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class DocumentServiceImpl implements DocumentService {
     @Autowired
     private DocumentMapper documentMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("${sharedb.url}")
-    private String sharedbUrl;
+    @Value("${sharedb.openDocumentUrl}")
+    private String sharedbOpenDocumentUrl;
+
+    @Value("${sharedb.getUserUrl}")
+    private String sharedbGetUserUrl;
 
     @Override
     public Boolean isOwner(Integer userId, Integer documentId) {
@@ -64,7 +70,7 @@ public class DocumentServiceImpl implements DocumentService {
 
         ///  发送POST请求到协作服务器
         String content = documentMapper.selectById(documentId).getCode();
-        createSharedbService(createSharingCode(documentId),content);
+        createSharedbService(userId,createSharingCode(documentId),content);
         return documentId;
     }
 
@@ -80,7 +86,7 @@ public class DocumentServiceImpl implements DocumentService {
 
         ///  发送POST请求到协作服务器
         String content = documentMapper.selectById(documentId).getCode();
-        createSharedbService(createSharingCode(documentId),content);
+        createSharedbService(userId, createSharingCode(documentId),content);
         return createSharingCode(documentId);
     }
 
@@ -94,13 +100,13 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public FileInfoDto getFileInfo(Integer userId, Integer documentId) {
+    public DocumentInfoDto getDocumentInfo(Integer userId, Integer documentId) {
         if (!isOwner(userId, documentId) && !isCollaborator(userId, documentId)) {
             throw new RuntimeException("无权查看文档信息");
         }
 
         try {
-            return documentMapper.getFileInfo(documentId);
+            return documentMapper.getDocumentInfo(documentId);
         } catch (DuplicateKeyException e) {
             throw new RuntimeException("未能获取文档信息");
         }
@@ -173,10 +179,11 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public void createSharedbService(String colabCode, String content) {
+    public void createSharedbService(Integer userId,String colabCode, String content) {
         try {
             // 创建一个 Map 来存储 JSON 数据
             Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("userId", userId.toString());
             requestBody.put("docCode", colabCode);
             requestBody.put("content", content);
 
@@ -192,7 +199,7 @@ public class DocumentServiceImpl implements DocumentService {
             HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
 
             // 发送 POST 请求
-            ResponseEntity<String> result = restTemplate.exchange(sharedbUrl, HttpMethod.POST, entity, String.class);
+            ResponseEntity<String> result = restTemplate.exchange(sharedbOpenDocumentUrl, HttpMethod.POST, entity, String.class);
 
             // 可以根据需要处理响应结果
             if (result.getStatusCode().is2xxSuccessful()) {
@@ -206,7 +213,53 @@ public class DocumentServiceImpl implements DocumentService {
         }
     }
 
+    @Override
+    public List<User> getUsersByDocumentId(Integer documentId) {
+        try {
+            Map<String, String> requestBody = new HashMap<>();
+            String docCode = createSharingCode(documentId);
+            requestBody.put("docCode", docCode);
 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonPayload = objectMapper.writeValueAsString(requestBody);
+            System.out.println("请求的 JSON 字符串: " + jsonPayload);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<String> entity = new HttpEntity<>(jsonPayload, headers);
+
+            ResponseEntity<String> result = restTemplate.exchange(sharedbGetUserUrl, HttpMethod.POST, entity, String.class);
+
+            if (result.getStatusCode().is2xxSuccessful()) {
+                String responseBody = result.getBody();
+                // 将响应的 JSON 字符串转换为 UserResponse 对象
+                ShareDBResponseDto userResponse = objectMapper.readValue(responseBody, ShareDBResponseDto.class);
+
+                System.out.println("请求成功，文档代码: " + userResponse.getDocCode());
+                System.out.println("相关用户列表: ");
+                for (String user : userResponse.getUsers()) {
+                    System.out.println(user);
+                }
+                List<User> userList = new ArrayList<>();
+                for (String user : userResponse.getUsers()) {
+                    System.out.println(user);
+                    User userEntity = userMapper.selectById(Integer.parseInt(user));
+                    userList.add(userEntity);
+                }
+                return userList;
+            } else {
+                System.out.println("请求失败，状态码: " + result.getStatusCode());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public FileInfoDto getFileInfo(Integer id, Integer documentId) {
+        return null;
+    }
     /// 下为与协作码相关的函数
 
     private Integer getSharedId(String sharingCode)  throws DocInvitationCodeException {
