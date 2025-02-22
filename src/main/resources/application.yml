@@ -21,7 +21,8 @@ mybatis:
   type-aliases-package: com.tongji.codejourneycolab.codejourneycolabbackend.entity
 
 sharedb:
-  url: http://127.0.0.1:4242/share/opendocument
+  openDocumentUrl: http://127.0.0.1:4242/share/opendocument
+  getUserUrl: http://127.0.0.1:4242/share/getUsersByDocCode
 
 redis:
   host: localhost

@@ -101,6 +101,8 @@ public class QuestionController {
     @PostMapping("/runWithInput")
     public String runQuestion(@RequestParam String code, @RequestParam String input) {
         System.out.println("test");
+        System.out.println(code);
+        System.out.println(input);
         PythonExecutionService pythonExecutionService = new PythonExecutionService();
         return pythonExecutionService.executeWithInput(code, input);
     }
